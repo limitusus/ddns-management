@@ -1,0 +1,75 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use 5.010;
+
+use DBI;
+use DateTime;
+use Config::Pit;
+use Smart::Comments;
+#require 'twdel_keys.conf';
+
+main(@ARGV);
+
+sub main {
+    # Params
+    my ($name, $data) = @_;
+    my $type = "A";
+    my $dt = DateTime->now(time_zone => 'local');
+    my $updatetime = $dt->strftime("%F %T");
+    # DBH
+    my $config;
+    $config = pit_get("update_ddns", require => {
+            hostname => 'hostname',
+            database => 'database',
+            username => 'username',
+            password => 'password',
+        });
+    ### $config
+    $config = pit_set("update_ddns", data => {
+            hostname => $config->{hostname},
+            database => $config->{database},
+            username => $config->{username},
+            password => $config->{password},
+        });
+    my $dbh = DBI->connect(
+        "DBI:mysql:$config->{database}:$config->{hostname}",
+        $config->{username},
+        $config->{password},
+        { RaiseError=>1, PrintError=>1, AutoCommit=>0, }
+    );
+    ### $dbh
+    my $sth;
+    my $q1 = <<"SQL";
+SELECT
+    name, type, data, updatetime
+  FROM ddns
+  WHERE name = ? AND type = ?
+  ORDER BY updatetime DESC
+  LIMIT 1
+  FOR UPDATE
+SQL
+    $sth = $dbh->prepare($q1);
+    $sth->execute($name, $type);
+    my $row = $sth->fetchrow_arrayref;
+    $sth->finish;
+    if ($row) {
+        if ($row->[2] eq $data) {
+            $dbh->disconnect;
+            return;
+        }
+    }
+    my $q2 = <<"SQL";
+INSERT INTO ddns
+(name, type, data, updatetime)
+VALUES
+(?, ?, ?, ?)
+SQL
+    $sth = $dbh->prepare($q2);
+    $sth->execute($name, $type, $data, $updatetime);
+    $sth->finish;
+    $dbh->commit;
+    $dbh->disconnect;
+};
+
