@@ -1,0 +1,7 @@
+#!/bin/sh
+
+IPADDR=`curl $IP_URL`
+
+echo $IPADDR
+
+ssh $SSH_OPTS -l $UPDATE_USER $UPDATE_HOST $UPDATE_CMD $TARGET_NAME $IPADDR

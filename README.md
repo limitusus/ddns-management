@@ -1,0 +1,63 @@
+# DDNS Management
+
+This is just for my private use.
+
+## Required Packages
+
+* DateTime
+* DBI
+* DBD::mysql
+* Config::Pit
+
+## update_ddns
+Perl script that updates DDNS database.
+All configurations are done through Pit (Config::Pit in Perl).
+This requires MySQL database and a table like the following:
+
+    CREATE TABLE `ddns` (
+      `name` varchar(40) default NULL,
+      `type` enum('A','CNAME','MX','NS','SOA') default NULL,
+      `data` varchar(40) default NULL,
+      `updatetime` datetime default NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+### Usage
+
+    $ ./update_dns $NAME $DATA
+will update the $NAME.$ORIGIN record with $DATA.
+For instance, when you update <code>foobar</code> with <code>192.168.0.12</code> the command will be
+
+    $ ./update_ddns foobar 192.168.0.12
+
+## ddns_client
+Shell script that invokes update_dns.
+It can be configured by <code>envdir</code>.
+
+### <code>$ENVDIR/IP_URL</code>
+
+The script knows the global IP address through accessing this URL.
+This <code>IP_URL</code> returns <code>text/plain</code> formatted IP address string.
+
+### <code>$ENVDIR/UPDATE_HOST</code>
+
+Hostname of the DDNS server.
+
+### <code>$ENVDIR/UPDATE_USER</code>
+
+The login name for SSH command.
+
+### <code>$ENVDIR/SSH_OPTS</code>
+
+The command-line options for SSH access to the DDNS server.
+It is inteded to specify SSH private key (<code>-i $KEY</code>)
+
+### <code>$ENVDIR/TARGET_NAME</code>
+
+The DNS name of the client.
+It will be <code>name</code> record in the DDNS database.
+
+### <code>$ENVDIR/UPDATE_CMD</code>
+
+DDNS update command invoked in the DDNS server.
+It is intended to launch <code>update_ddns</code>.
+
