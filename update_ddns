@@ -7,8 +7,7 @@ use 5.010;
 use DBI;
 use DateTime;
 use Config::Pit;
-use Smart::Comments;
-#require 'twdel_keys.conf';
+#use Smart::Comments;
 
 main(@ARGV);
 
