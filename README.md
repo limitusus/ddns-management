@@ -12,22 +12,15 @@ This is just for my private use.
 ## update_ddns
 Perl script that updates DDNS database.
 All configurations are done through Pit (Config::Pit in Perl).
-This requires MySQL database and a table like the following:
-
-    CREATE TABLE `ddns` (
-      `name` varchar(40) default NULL,
-      `type` enum('A','CNAME','MX','NS','SOA') default NULL,
-      `data` varchar(40) default NULL,
-      `updatetime` datetime default NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+This requires MySQL database and a table as `ddns_init.sql`.
 
 ### Usage
 
-    $ ./update_dns $NAME $DATA
-will update the $NAME.$ORIGIN record with $DATA.
-For instance, when you update <code>foobar</code> with <code>192.168.0.12</code> the command will be
+    $ ./update_dns $DOMAIN $NAME $DATA
+will update the $NAME.$DOMAIN record with $DATA.
+For instance, when you update <code>foobar.example.com</code> with <code>192.168.0.12</code> the command will be
 
-    $ ./update_ddns foobar 192.168.0.12
+    $ ./update_ddns example.com foobar 192.168.0.12
 
 ## ddns_client
 Shell script that invokes update_dns.
@@ -50,6 +43,11 @@ The login name for SSH command.
 
 The command-line options for SSH access to the DDNS server.
 It is inteded to specify SSH private key (<code>-i $KEY</code>)
+
+### <code>$ENVDIR/TARGET_DOMAIN</code>
+
+The DNS domain of the client.
+It must be contained in `zone` record in DDNS database.
 
 ### <code>$ENVDIR/TARGET_NAME</code>
 
