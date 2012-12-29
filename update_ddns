@@ -61,12 +61,12 @@ SQL
     }
     my $q2 = <<"SQL";
 INSERT INTO ddns
-(name, type, data, updatetime)
+(name, type, data, updatetime, applied)
 VALUES
 (?, ?, ?, ?)
 SQL
     $sth = $dbh->prepare($q2);
-    $sth->execute($name, $type, $data, $updatetime);
+    $sth->execute($name, $type, $data, $updatetime, 0);
     $sth->finish;
     $dbh->commit;
     $dbh->disconnect;
