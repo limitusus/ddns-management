@@ -8,6 +8,8 @@ This is just for my private use.
 * DBI
 * DBD::mysql
 * Config::Pit
+* Net::DNS
+* (optional) Smart::Comments
 
 ## update_ddns
 Perl script that updates DDNS database.
