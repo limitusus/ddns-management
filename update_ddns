@@ -30,6 +30,9 @@ SELECT
   FOR UPDATE
 SQL
     $sth = $dbh->prepare($q1);
+    ### $domain
+    ### $name
+    ### $type
     $sth->execute($domain, $name, $type);
     my $row = $sth->fetchrow_arrayref;
     $sth->finish;
@@ -41,6 +44,7 @@ SQL
         }
         $zone_id = $row->[4];
     }
+    warn "Unknown zone" if int($zone_id) == 999;
     my $q2 = <<"SQL";
 INSERT INTO ddns
 (zone, name, type, data, updatetime, applied)
