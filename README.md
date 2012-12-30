@@ -18,7 +18,10 @@ This requires MySQL database and a table as `ddns_init.sql`.
 
 ### Usage
 
+## update_dns
+
     $ ./update_dns $DOMAIN $NAME $DATA
+
 will update the $NAME.$DOMAIN record with $DATA.
 For instance, when you update <code>foobar.example.com</code> with <code>192.168.0.12</code> the command will be
 
