@@ -61,6 +61,7 @@ SQL
         }
         $zone_id = $row->[4];
     }
+    warn "Unknown zone" if int($zone_id) == 999;
     my $q2 = <<"SQL";
 INSERT INTO ddns
 (zone, name, type, data, updatetime, applied)
