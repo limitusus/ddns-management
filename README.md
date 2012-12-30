@@ -64,3 +64,9 @@ It will be <code>name</code> record in the DDNS database.
 DDNS update command invoked in the DDNS server.
 It is intended to launch <code>update_ddns</code>.
 
+## apply_ddns
+
+    $ ./apply_ddns
+
+on the named server will send DDNS packet (RFC 2136) and set zone.applied 1 if successed.
+

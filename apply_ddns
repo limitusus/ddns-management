@@ -1,0 +1,66 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Net::DNS;
+
+use DBH;
+
+main();
+
+sub main {
+    my $dbh = $DBH::dbh;
+    my $sql_not_applied = <<"SQL";
+SELECT
+  zone.domain, ddns.name, ddns.data, ddns.type, ddns.zone
+  FROM ddns, zone
+  WHERE ddns.zone = zone.id AND ddns.applied = 0
+  FOR UPDATE
+SQL
+    my $sth_not_applied = $dbh->prepare($sql_not_applied);
+    my $sql_success = <<"SQL";
+UPDATE ddns
+  SET applied = 1
+  WHERE ddns.zone = ? AND name = ? AND type = ? AND applied = 0 
+SQL
+    $sth_not_applied->execute;
+    while (my $row = $sth_not_applied->fetchrow_arrayref) {
+        my ($domain, $name, $data, $type, $zone_id) = @{$row};
+        ### $domain
+        ### $name
+        ### $data
+        ### $type
+        ### $zone_id
+        my $update = Net::DNS::Update->new($domain);
+        $update->push(prerequisite => yxrrset(qq{$name.$domain. $type}));
+        $update->push(update => rr_del(qq{$name.$domain. $type}));
+        my $res = Net::DNS::Resolver->new(nameservers => [qw(127.0.0.1)]);
+        $res->send($update);
+
+        my $update2 = Net::DNS::Update->new($domain);
+        $update2->push(update => rr_add(qq{$name.$domain. 3600 $type $data}));
+        $res = Net::DNS::Resolver->new(nameservers => [qw(127.0.0.1)]);
+        my $reply = $res->send($update2);
+        if ($reply) {
+            my $sth_success = $dbh->prepare($sql_success);
+            my @args = ($zone_id, $name, $type);
+            my $rcode = $reply->header->rcode;
+            register_result($rcode, $sth_success, \@args);
+        } else {
+            register_result($res->errorstring);
+        }
+    }
+    $sth_not_applied->finish;
+    $dbh->commit;
+}
+
+sub register_result {
+    my ($msg, $sth, $args) = @_;
+    warn $msg;
+    if ($msg eq "NOERROR" and defined $args) {
+        $sth->execute(@$args);
+        warn "DB updated";
+    }
+}
+
